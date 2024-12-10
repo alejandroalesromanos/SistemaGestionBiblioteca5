@@ -1,4 +1,4 @@
-package Modelo;
+package modelo;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -6,7 +6,9 @@ import java.sql.SQLException;
 
 public class Db {
 
-	private String url = "jdbc:mysql://localhost:3306/alumnos";
+	//Hay que cambiar la url por la de la base de datos final	
+	//private String url = "jdbc:mysql://localhost:3306/alumnos";
+	
 	private String username = "root";
 	private String password = "root";
 	
