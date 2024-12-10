@@ -12,8 +12,9 @@ public class Main {
 		if (nota >= 0 && nota <= 10) {
 			System.out.println("La nota es correcta");
 		} else {
-			System.out.println("La nota no es correcta");
+			System.out.println("La nota no es muy correcta");
 		}
+		int prod;
 	
 		
 	}
