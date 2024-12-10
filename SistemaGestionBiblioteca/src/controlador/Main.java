@@ -14,7 +14,8 @@ public class Main {
 		} else {
 			System.out.println("La nota no es muy correcta");
 		}
-		int prod;
+		int prod = 6456;
+		float suma = prod + 5;
 	
 		
 	}
