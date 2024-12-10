@@ -9,7 +9,11 @@ public class Main {
 
 		Scanner s = new Scanner(System.in);
 		int nota = s.nextInt();
-		
+		if (nota >= 0 && nota <= 10) {
+			System.out.println("La nota es correcta");
+		} else {
+			System.out.println("La nota no es correcta");
+		}
 	
 		
 	}
