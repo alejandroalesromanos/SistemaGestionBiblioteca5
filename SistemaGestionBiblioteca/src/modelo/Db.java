@@ -7,8 +7,7 @@ import java.sql.SQLException;
 public class Db {
 
 	//Hay que cambiar la url por la de la base de datos final	
-	//private String url = "jdbc:mysql://localhost:3306/alumnos";
-	
+	private String url = "jdbc:mysql://localhost:3306/biblioteca";
 	private String username = "root";
 	private String password = "root";
 	
@@ -19,8 +18,6 @@ public class Db {
 		this.password = password;
 
 	}
-	
-	
 	
 	public Connection getConnection() {
 		
