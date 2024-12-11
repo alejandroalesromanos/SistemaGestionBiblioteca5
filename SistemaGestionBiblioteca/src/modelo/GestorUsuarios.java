@@ -14,7 +14,7 @@ public class GestorUsuarios {
 
     // Método para insertar un usuario
     public boolean insertarUsuario(Usuario usuario) {
-        String sql = "INSERT INTO Usuarios (DNI, Nombre, Apellidos, Email, Telefono, Rol) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Usuarios (DNI, Nombre, Apellidos, Email, Telefono, Rol, Password) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, usuario.getDni());
@@ -23,6 +23,7 @@ public class GestorUsuarios {
             stmt.setString(4, usuario.getEmail());
             stmt.setString(5, usuario.getTelefono());
             stmt.setString(6, usuario.getRol().name());
+            stmt.setString(7, usuario.getPassword());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -45,7 +46,8 @@ public class GestorUsuarios {
                         rs.getString("Apellidos"),
                         rs.getString("Email"),
                         rs.getString("Telefono"),
-                        Usuario.Rol.valueOf(rs.getString("Rol"))
+                        Usuario.Rol.valueOf(rs.getString("Rol")),
+                        rs.getString("Password")
                 );
                 usuarios.add(usuario);
             }
@@ -57,7 +59,7 @@ public class GestorUsuarios {
 
     // Método para actualizar un usuario
     public boolean actualizarUsuario(Usuario usuario) {
-        String sql = "UPDATE Usuarios SET DNI = ?, Nombre = ?, Apellidos = ?, Email = ?, Telefono = ?, Rol = ? WHERE ID = ?";
+        String sql = "UPDATE Usuarios SET DNI = ?, Nombre = ?, Apellidos = ?, Email = ?, Telefono = ?, Rol = ?, Password = ? WHERE ID = ?";
         try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, usuario.getDni());
@@ -66,7 +68,8 @@ public class GestorUsuarios {
             stmt.setString(4, usuario.getEmail());
             stmt.setString(5, usuario.getTelefono());
             stmt.setString(6, usuario.getRol().name());
-            stmt.setInt(7, usuario.getId());
+            stmt.setString(7, usuario.getPassword());
+            stmt.setInt(8, usuario.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -102,7 +105,8 @@ public class GestorUsuarios {
                             rs.getString("Apellidos"),
                             rs.getString("Email"),
                             rs.getString("Telefono"),
-                            Usuario.Rol.valueOf(rs.getString("Rol"))
+                            Usuario.Rol.valueOf(rs.getString("Rol")),
+                            rs.getString("Password")
                     );
                 }
             }
