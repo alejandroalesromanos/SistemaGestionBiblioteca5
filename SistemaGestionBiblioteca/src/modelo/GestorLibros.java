@@ -4,11 +4,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LibroDAO {
+public class GestorLibros {
 
     private Db db;
 
-    public LibroDAO(Db db) {
+    public GestorLibros(Db db) {
         this.db = db;
     }
 
