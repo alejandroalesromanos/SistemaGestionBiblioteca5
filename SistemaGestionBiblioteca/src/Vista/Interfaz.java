@@ -21,20 +21,6 @@ public class Interfaz extends JFrame {
     private boolean isAdmin; // Variable para controlar el tipo de usuario
 
     /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            try {
-                Interfaz frame = new Interfaz();
-                frame.setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    /**
      * Create the frame.
      */
     public Interfaz() {
