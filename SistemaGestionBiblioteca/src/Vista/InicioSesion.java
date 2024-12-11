@@ -5,16 +5,22 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import modelo.GestorUsuarios;
+
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.FlowLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JPasswordField;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class InicioSesion extends JFrame {
 
@@ -73,6 +79,29 @@ public class InicioSesion extends JFrame {
 		panel_1.add(passwordField);
 		
 		JButton btnNewButton = new JButton("Siguiente");
+		btnNewButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String nombre = textField.getText();
+				String contraseña = new String(passwordField.getPassword());
+				if(GestorUsuarios.autenticarUsuario(nombre, contraseña)) {
+				
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							try {
+								MenuPrincipal frame = new MenuPrincipal();
+								frame.setVisible(true);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					});
+					
+				} else {
+					JOptionPane.showMessageDialog(contentPane, "Usuario o contraseña no correctos");
+				}
+			}
+		});
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
