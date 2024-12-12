@@ -18,19 +18,19 @@ public class MenuPrincipal extends JFrame {
         JPanel mainPanel = new JPanel(new GridLayout(4, 1, 10, 10));
 
         JButton librosButton = new JButton("Visualización de Libros");
-        librosButton.addActionListener(e -> new VisualizacionLibros().setVisible(true));
+        librosButton.addActionListener(e -> new VistaLibros().setVisible(true));
 
         JButton prestamosButton = new JButton("Gestión de Préstamos");
-        prestamosButton.addActionListener(e -> new GestionPrestamos().setVisible(true));
+        prestamosButton.addActionListener(e -> new VistaPrestamos().setVisible(true));
 
         JButton usuariosButton = new JButton("Gestión de Usuarios");
         usuariosButton.setEnabled(isAdmin);
-        usuariosButton.addActionListener(e -> new GestionUsuarios().setVisible(true));
+        usuariosButton.addActionListener(e -> new VistaUsuarios().setVisible(true));
 
         JButton cerrarSesionButton = new JButton("Cerrar Sesión");
         cerrarSesionButton.addActionListener(e -> {
             dispose();
-            new InicioSesion().setVisible(true);
+            new MenuInicioSesion().setVisible(true);
         });
 
         mainPanel.add(librosButton);
