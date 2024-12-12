@@ -31,23 +31,7 @@ public class MenuInicioSesion extends JFrame {
 	private JTextField emailField;
 	private JPasswordField passField;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
-			try {
-				MenuInicioSesion frame = new MenuInicioSesion();
-				frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
 
-	/**
-	 * Create the frame.
-	 */
 	public MenuInicioSesion() {
 		setTitle("Inicio de Sesión");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
