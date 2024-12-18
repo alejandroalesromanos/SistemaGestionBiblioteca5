@@ -1,8 +1,8 @@
 package controlador;
 
 import java.awt.EventQueue;
-import Vista.MenuInicioSesion;
 
+import Vista.VistaLogin;
 public class Main {
 
 	public static void main(String[] args) {
@@ -10,7 +10,8 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					MenuInicioSesion frame = new MenuInicioSesion();
+					VistaLogin frame = new VistaLogin();
+					frame.setSize(700,500);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();

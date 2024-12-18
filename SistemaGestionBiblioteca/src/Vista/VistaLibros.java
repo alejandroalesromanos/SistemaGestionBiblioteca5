@@ -1,31 +1,14 @@
 package Vista;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import java.awt.*;
+import java.sql.*;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-
 import modelo.Db;
 
 public class VistaLibros extends JFrame {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     private JTable bookTable;
     private DefaultTableModel tableModel;
 
@@ -33,85 +16,82 @@ public class VistaLibros extends JFrame {
         setTitle("Vista de Libros");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(800, 600);
-        FondoPantalla fondo = new FondoPantalla();
-        fondo.setBorder(new EmptyBorder(5, 5, 5, 5));
-        setContentPane(fondo);
         setLocationRelativeTo(null);
 
-        GridBagLayout gridBagLayout = new GridBagLayout();
-        getContentPane().setLayout(gridBagLayout);
+        // Fondo personalizado
+        JPanel fondoPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                int width = getWidth();
+                int height = getHeight();
+                GradientPaint gradient = new GradientPaint(0, 0, new Color(41, 128, 185), 0, height, new Color(109, 213, 250));
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, width, height);
+                g2d.dispose();
+            }
+        };
+        fondoPanel.setLayout(new BorderLayout());
+        fondoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        setContentPane(fondoPanel);
 
-        JLabel label = new JLabel("Lista de Libros");
-        label.setFont(new Font("Arial Black", Font.BOLD, 18));
-        label.setForeground(Color.WHITE);
-        GridBagConstraints gbc_label = new GridBagConstraints();
-        gbc_label.insets = new Insets(10, 10, 10, 10);
-        gbc_label.gridx = 0;
-        gbc_label.gridy = 0;
-        gbc_label.gridwidth = 2;
-        getContentPane().add(label, gbc_label);
+        // Título de la ventana
+        JLabel titleLabel = new JLabel("Lista de Libros", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial Black", Font.BOLD, 24));
+        titleLabel.setForeground(Color.WHITE);
+        fondoPanel.add(titleLabel, BorderLayout.NORTH);
 
         // Tabla de libros
-        tableModel = new DefaultTableModel(new Object[][] {}, new String[] { "ID", "Título", "Autor", "Género" });
+        tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID", "Título", "Autor", "Género"}) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Hacer que la tabla no sea editable
+            }
+        };
         bookTable = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(bookTable);
-        GridBagConstraints gbc_table = new GridBagConstraints();
-        gbc_table.insets = new Insets(10, 10, 10, 10);
-        gbc_table.gridx = 0;
-        gbc_table.gridy = 1;
-        gbc_table.gridwidth = 2;
-        gbc_table.fill = GridBagConstraints.BOTH;
-        gbc_table.weightx = 1.0;
-        gbc_table.weighty = 1.0;
-        getContentPane().add(scrollPane, gbc_table);
+        bookTable.setRowHeight(25);
+        bookTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        bookTable.getTableHeader().setBackground(new Color(41, 128, 185));
+        bookTable.getTableHeader().setForeground(Color.WHITE);
+        bookTable.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        // Botón para añadir libros (solo para administradores)
+        JScrollPane scrollPane = new JScrollPane(bookTable);
+        fondoPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Panel de botones
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        buttonPanel.setOpaque(false);
+
         if (isAdmin) {
             JButton addBookButton = new JButton("Añadir Libro");
             addBookButton.addActionListener(e -> addBook());
-            GridBagConstraints gbc_addBookButton = new GridBagConstraints();
-            gbc_addBookButton.insets = new Insets(10, 10, 10, 10);
-            gbc_addBookButton.gridx = 0;
-            gbc_addBookButton.gridy = 2;
-            gbc_addBookButton.fill = GridBagConstraints.HORIZONTAL;
-            getContentPane().add(addBookButton, gbc_addBookButton);
+            buttonPanel.add(addBookButton);
 
-            // Botón para eliminar libros
             JButton deleteBookButton = new JButton("Eliminar Libro");
             deleteBookButton.addActionListener(e -> deleteBook());
-            GridBagConstraints gbc_deleteBookButton = new GridBagConstraints();
-            gbc_deleteBookButton.insets = new Insets(10, 10, 10, 10);
-            gbc_deleteBookButton.gridx = 1;
-            gbc_deleteBookButton.gridy = 2;
-            gbc_deleteBookButton.fill = GridBagConstraints.HORIZONTAL;
-            getContentPane().add(deleteBookButton, gbc_deleteBookButton);
+            buttonPanel.add(deleteBookButton);
         }
 
-        // Botón para volver al menú principal
         JButton backButton = new JButton("Volver al Menú Principal");
         backButton.addActionListener(e -> {
             dispose();
             new MenuPrincipal(isAdmin, currentUser).setVisible(true);
         });
-        GridBagConstraints gbc_backButton = new GridBagConstraints();
-        gbc_backButton.insets = new Insets(10, 10, 10, 10);
-        gbc_backButton.gridx = 0;
-        gbc_backButton.gridy = 3;
-        gbc_backButton.gridwidth = 2;
-        gbc_backButton.fill = GridBagConstraints.HORIZONTAL;
-        getContentPane().add(backButton, gbc_backButton);
+        buttonPanel.add(backButton);
 
+        fondoPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Cargar libros al inicio
         loadBooks();
     }
 
-    // Cargar libros en la tabla
     private void loadBooks() {
         try (Connection connection = new Db().getConnection();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SELECT ID, Titulo, Autor, Genero FROM libros")) {
 
-            tableModel.setRowCount(0); // Limpiar tabla
-
+            tableModel.setRowCount(0); // Limpiar la tabla
             while (resultSet.next()) {
                 int id = resultSet.getInt("ID");
                 String titulo = resultSet.getString("Titulo");
@@ -120,37 +100,57 @@ public class VistaLibros extends JFrame {
                 tableModel.addRow(new Object[]{id, titulo, autor, genero});
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar libros: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Error al cargar libros: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Añadir libro
     private void addBook() {
-        String titulo = JOptionPane.showInputDialog(this, "Título del libro:");
-        String autor = JOptionPane.showInputDialog(this, "Autor del libro:");
-        String genero = JOptionPane.showInputDialog(this, "Género del libro:");
+        // Crear panel para los campos de entrada
+        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        if (titulo == null || autor == null || genero == null) {
-            return;
-        }
+        JTextField titleField = new JTextField();
+        JTextField authorField = new JTextField();
+        JTextField genreField = new JTextField();
 
-        try (Connection connection = new Db().getConnection();
-             PreparedStatement ps = connection.prepareStatement("INSERT INTO libros (Titulo, Autor, Genero) VALUES (?, ?, ?)")) {
-            ps.setString(1, titulo);
-            ps.setString(2, autor);
-            ps.setString(3, genero);
-            ps.executeUpdate();
-            loadBooks();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al añadir libro: " + e.getMessage());
+        panel.add(new JLabel("Título:"));
+        panel.add(titleField);
+        panel.add(new JLabel("Autor:"));
+        panel.add(authorField);
+        panel.add(new JLabel("Género:"));
+        panel.add(genreField);
+
+        // Mostrar el formulario en un JOptionPane
+        int option = JOptionPane.showConfirmDialog(this, panel, "Agregar Nuevo Libro", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (option == JOptionPane.OK_OPTION) {
+            String titulo = titleField.getText().trim();
+            String autor = authorField.getText().trim();
+            String genero = genreField.getText().trim();
+
+            if (titulo.isEmpty() || autor.isEmpty() || genero.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            try (Connection connection = new Db().getConnection();
+                 PreparedStatement ps = connection.prepareStatement("INSERT INTO libros (Titulo, Autor, Genero) VALUES (?, ?, ?)")) {
+                ps.setString(1, titulo);
+                ps.setString(2, autor);
+                ps.setString(3, genero);
+                ps.executeUpdate();
+                loadBooks();
+                JOptionPane.showMessageDialog(this, "Libro añadido con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al añadir libro: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
-    // Eliminar libro
     private void deleteBook() {
         int selectedRow = bookTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un libro para eliminar.");
+            JOptionPane.showMessageDialog(this, "Seleccione un libro para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -161,8 +161,9 @@ public class VistaLibros extends JFrame {
             ps.setInt(1, bookId);
             ps.executeUpdate();
             loadBooks();
+            JOptionPane.showMessageDialog(this, "Libro eliminado con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al eliminar libro: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Error al eliminar libro: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

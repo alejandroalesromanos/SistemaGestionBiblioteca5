@@ -1,14 +1,7 @@
 package Vista;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import java.awt.*;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class MenuPrincipal extends JFrame {
@@ -19,77 +12,87 @@ public class MenuPrincipal extends JFrame {
         setTitle("Menú Principal");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(800, 600);
-        FondoPantalla fondo = new FondoPantalla();
-        fondo.setBorder(new EmptyBorder(5, 5, 5, 5));
-        setContentPane(fondo);
         setLocationRelativeTo(null);
 
-        GridBagLayout gridBagLayout = new GridBagLayout();
-        getContentPane().setLayout(gridBagLayout);
+        // Fondo personalizado con gradiente
+        JPanel fondoPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                int width = getWidth();
+                int height = getHeight();
+                GradientPaint gradient = new GradientPaint(0, 0, new Color(41, 128, 185), 0, height, new Color(109, 213, 250));
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, width, height);
+                g2d.dispose();
+            }
+        };
+        fondoPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        fondoPanel.setLayout(new GridBagLayout());
+        setContentPane(fondoPanel);
 
-        JLabel welcomeLabel = new JLabel("Bienvenido, " + currentUser);
+        // Configuración del layout
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Etiqueta de bienvenida
+        JLabel welcomeLabel = new JLabel("Bienvenido, " + currentUser, SwingConstants.CENTER);
         welcomeLabel.setFont(new Font("Arial Black", Font.BOLD, 18));
         welcomeLabel.setForeground(Color.WHITE);
-        GridBagConstraints gbc_welcomeLabel = new GridBagConstraints();
-        gbc_welcomeLabel.insets = new Insets(10, 10, 10, 10);
-        gbc_welcomeLabel.gridx = 1;
-        gbc_welcomeLabel.gridy = 0;
-        getContentPane().add(welcomeLabel, gbc_welcomeLabel);
+        gbc.gridy = 0;
+        fondoPanel.add(welcomeLabel, gbc);
 
+        // Botón para gestión de usuarios (solo para administradores)
         if (isAdmin) {
             JButton userManagementButton = new JButton("Gestión de Usuarios");
+            userManagementButton.setFont(new Font("Arial", Font.PLAIN, 14));
             userManagementButton.addActionListener(e -> {
                 new VistaUsuarios(isAdmin, currentUser).setVisible(true);
                 dispose();
             });
-            GridBagConstraints gbc_userManagementButton = new GridBagConstraints();
-            gbc_userManagementButton.insets = new Insets(10, 10, 10, 10);
-            gbc_userManagementButton.gridx = 1;
-            gbc_userManagementButton.gridy = 1;
-            getContentPane().add(userManagementButton, gbc_userManagementButton);
+            gbc.gridy = 1;
+            fondoPanel.add(userManagementButton, gbc);
         }
 
+        // Botón para vista de libros
         JButton bookManagementButton = new JButton("Vista de Libros");
+        bookManagementButton.setFont(new Font("Arial", Font.PLAIN, 14));
         bookManagementButton.addActionListener(e -> {
-            new VistaLibros(isAdmin, currentUser).setVisible(true); // Agrega currentUser si es necesario
+            new VistaLibros(isAdmin, currentUser).setVisible(true);
             dispose();
         });
+        gbc.gridy = 2;
+        fondoPanel.add(bookManagementButton, gbc);
 
-        GridBagConstraints gbc_bookManagementButton = new GridBagConstraints();
-        gbc_bookManagementButton.insets = new Insets(10, 10, 10, 10);
-        gbc_bookManagementButton.gridx = 1;
-        gbc_bookManagementButton.gridy = 2;
-        getContentPane().add(bookManagementButton, gbc_bookManagementButton);
-
+        // Botón para préstamos y devoluciones
         JButton loansAndReturnsButton = new JButton("Préstamos y Devoluciones");
+        loansAndReturnsButton.setFont(new Font("Arial", Font.PLAIN, 14));
         loansAndReturnsButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, "Acceso a Préstamos y Devoluciones.");
         });
-        GridBagConstraints gbc_loansAndReturnsButton = new GridBagConstraints();
-        gbc_loansAndReturnsButton.insets = new Insets(10, 10, 10, 10);
-        gbc_loansAndReturnsButton.gridx = 1;
-        gbc_loansAndReturnsButton.gridy = 3;
-        getContentPane().add(loansAndReturnsButton, gbc_loansAndReturnsButton);
+        gbc.gridy = 3;
+        fondoPanel.add(loansAndReturnsButton, gbc);
 
+        // Botón para notificaciones
         JButton notificationsButton = new JButton("Notificaciones");
+        notificationsButton.setFont(new Font("Arial", Font.PLAIN, 14));
         notificationsButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, "Acceso a Notificaciones.");
         });
-        GridBagConstraints gbc_notificationsButton = new GridBagConstraints();
-        gbc_notificationsButton.insets = new Insets(10, 10, 10, 10);
-        gbc_notificationsButton.gridx = 1;
-        gbc_notificationsButton.gridy = 4;
-        getContentPane().add(notificationsButton, gbc_notificationsButton);
+        gbc.gridy = 4;
+        fondoPanel.add(notificationsButton, gbc);
 
+        // Botón para cerrar sesión
         JButton logoutButton = new JButton("Cerrar Sesión");
+        logoutButton.setFont(new Font("Arial", Font.PLAIN, 14));
         logoutButton.addActionListener(e -> {
             dispose();
-            new MenuInicioSesion().setVisible(true);
+            new VistaLogin().setVisible(true);
         });
-        GridBagConstraints gbc_logoutButton = new GridBagConstraints();
-        gbc_logoutButton.insets = new Insets(10, 10, 10, 10);
-        gbc_logoutButton.gridx = 1;
-        gbc_logoutButton.gridy = 5;
-        getContentPane().add(logoutButton, gbc_logoutButton);
+        gbc.gridy = 5;
+        fondoPanel.add(logoutButton, gbc);
     }
 }
