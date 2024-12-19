@@ -71,7 +71,7 @@ public class MenuPrincipal extends JFrame {
         JButton loansAndReturnsButton = new JButton("Préstamos y Devoluciones");
         loansAndReturnsButton.setFont(new Font("Arial", Font.PLAIN, 14));
         loansAndReturnsButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Acceso a Préstamos y Devoluciones.");
+        	new VistaPrestamos(isAdmin, currentUser).setVisible(true);
         });
         gbc.gridy = 3;
         fondoPanel.add(loansAndReturnsButton, gbc);
