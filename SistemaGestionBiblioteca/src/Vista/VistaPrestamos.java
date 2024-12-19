@@ -44,7 +44,7 @@ public class VistaPrestamos extends JFrame {
         fondoPanel.add(titleLabel, BorderLayout.NORTH);
 
         // Tabla de préstamos
-        tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"Libro", "Usuario", "Fecha Préstamo", "Fecha Devolución", "Multa", "Estado"}) {
+        tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"Libro", "Usuario", "Fecha Préstamo", "Fecha Devolución", "Multa", "Estado", "ID"}) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // Hacer que la tabla no sea editable
@@ -82,9 +82,13 @@ public class VistaPrestamos extends JFrame {
             addLoanButton.addActionListener(e -> addPrestamo());
             buttonPanel.add(addLoanButton);
 
-            JButton toggleReturnButton = new JButton("Alternar Estado de Devolución");
-            toggleReturnButton.addActionListener(e -> toggleReturnStatus());
-            buttonPanel.add(toggleReturnButton);
+            JButton markAsReturnedButton = new JButton("Marcar como Devuelto");
+            markAsReturnedButton.addActionListener(e -> updateReturnStatus(true));
+            buttonPanel.add(markAsReturnedButton);
+
+            JButton markAsNotReturnedButton = new JButton("Marcar como No Devuelto");
+            markAsNotReturnedButton.addActionListener(e -> updateReturnStatus(false));
+            buttonPanel.add(markAsNotReturnedButton);
         }
 
         JButton backButton = new JButton("Volver al Menú Principal");
@@ -126,7 +130,8 @@ public class VistaPrestamos extends JFrame {
                             resultSet.getDate("Fecha_Prestamo"),
                             resultSet.getDate("Fecha_Devolucion"),
                             resultSet.getFloat("Multa_Generada"),
-                            estado
+                            estado,
+                            resultSet.getInt("ID")
                     });
                 }
             }
@@ -172,37 +177,23 @@ public class VistaPrestamos extends JFrame {
         }
     }
 
-    private void toggleReturnStatus() {
+    private void updateReturnStatus(boolean markAsReturned) {
         int selectedRow = prestamosTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un préstamo para alternar su estado.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Seleccione un préstamo para actualizar su estado.", "Advertencia", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        // Obtener el estado actual desde la columna de estado
-        String currentStatus = (String) tableModel.getValueAt(selectedRow, 6); // Estado está en la columna 6
-        if (currentStatus == null || currentStatus.isEmpty()) {
-            currentStatus = "No Devuelto"; // Manejar casos donde esté vacío
-        }
-
-        boolean isCurrentlyReturned = "Devuelto".equalsIgnoreCase(currentStatus);
+        int idPrestamo = (int) tableModel.getValueAt(selectedRow, 6); // Obtener el ID de la columna 6
 
         try (Connection connection = new Db().getConnection()) {
-            String query;
-            if (isCurrentlyReturned) {
-                // Si está devuelto, alternamos a "No Devuelto" (ponemos Fecha_Devolucion a NULL)
-                query = "UPDATE prestamos SET Fecha_Devolucion = NULL WHERE ID = ?";
-            } else {
-                // Si no está devuelto, alternamos a "Devuelto" (ponemos la fecha actual)
-                query = "UPDATE prestamos SET Fecha_Devolucion = CURRENT_DATE WHERE ID = ?";
-            }
+            String query = markAsReturned ? 
+                "UPDATE prestamos SET Fecha_Devolucion = CURRENT_DATE WHERE ID = ?" :
+                "UPDATE prestamos SET Fecha_Devolucion = NULL WHERE ID = ?";
 
             try (PreparedStatement ps = connection.prepareStatement(query)) {
-                int idPrestamo = (int) tableModel.getValueAt(selectedRow, 0); // Obtener el ID de la columna 0
                 ps.setInt(1, idPrestamo);
                 ps.executeUpdate();
-
-                // Recargar los datos de la tabla después de actualizar
                 loadPrestamos("ALL");
                 JOptionPane.showMessageDialog(this, "Estado del préstamo actualizado con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
             }
@@ -210,7 +201,4 @@ public class VistaPrestamos extends JFrame {
             JOptionPane.showMessageDialog(this, "Error al actualizar el estado del préstamo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-
-
 }
