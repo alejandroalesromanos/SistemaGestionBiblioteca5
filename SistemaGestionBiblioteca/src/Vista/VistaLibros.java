@@ -15,8 +15,8 @@ public class VistaLibros extends JFrame {
     public VistaLibros(boolean isAdmin, String currentUser) {
         setTitle("Vista de Libros");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(true);
 
         // Fondo personalizado
         JPanel fondoPanel = new JPanel() {
@@ -75,8 +75,8 @@ public class VistaLibros extends JFrame {
 
         JButton backButton = new JButton("Volver al Menú Principal");
         backButton.addActionListener(e -> {
-            dispose();
             new MenuPrincipal(isAdmin, currentUser).setVisible(true);
+            dispose();
         });
         buttonPanel.add(backButton);
 

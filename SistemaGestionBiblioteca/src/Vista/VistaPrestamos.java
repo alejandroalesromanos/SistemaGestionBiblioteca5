@@ -15,6 +15,7 @@ public class VistaPrestamos extends JFrame {
     public VistaPrestamos(boolean isAdmin, String currentUser) {
         setTitle("Vista de Préstamos");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setSize(800, 600);
         setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(null);
@@ -61,37 +62,75 @@ public class VistaPrestamos extends JFrame {
         fondoPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Panel de botones
-        JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 10, 10)); // Una columna y botones apilados verticalmente
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 10, 10));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JButton allLoansButton = new JButton("Mostrar Todos los Préstamos");
+        // Custom button style
+        class StyledButton extends JButton {
+            public StyledButton(String text) {
+                super(text);
+                setFont(new Font("Arial", Font.BOLD, 14));
+                setForeground(Color.WHITE);
+                setBackground(new Color(52, 152, 219));
+                setBorderPainted(true);
+                setFocusPainted(false);
+                setContentAreaFilled(false);
+                setOpaque(true);
+                setPreferredSize(new Dimension(250, 40));
+                setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseEntered(java.awt.event.MouseEvent evt) {
+                        setBackground(new Color(41, 128, 185));
+                        setBorder(BorderFactory.createLineBorder(new Color(52, 152, 219), 2));
+                    }
+                    public void mouseExited(java.awt.event.MouseEvent evt) {
+                        setBackground(new Color(52, 152, 219));
+                        setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
+                    }
+                });
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (getModel().isArmed()) {
+                    g.setColor(new Color(31, 97, 141));
+                } else {
+                    g.setColor(getBackground());
+                }
+                g.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 10, 10);
+                super.paintComponent(g);
+            }
+        }
+
+        // Create buttons using the new StyledButton class
+        JButton allLoansButton = new StyledButton("Mostrar Todos los Préstamos");
         allLoansButton.addActionListener(e -> loadPrestamos("ALL"));
         buttonPanel.add(allLoansButton);
 
-        JButton returnedLoansButton = new JButton("Mostrar Préstamos Devueltos");
+        JButton returnedLoansButton = new StyledButton("Mostrar Préstamos Devueltos");
         returnedLoansButton.addActionListener(e -> loadPrestamos("RETURNED"));
         buttonPanel.add(returnedLoansButton);
 
-        JButton notReturnedLoansButton = new JButton("Mostrar Préstamos No Devueltos");
+        JButton notReturnedLoansButton = new StyledButton("Mostrar Préstamos No Devueltos");
         notReturnedLoansButton.addActionListener(e -> loadPrestamos("NOT_RETURNED"));
         buttonPanel.add(notReturnedLoansButton);
 
         if (isAdmin) {
-            JButton addLoanButton = new JButton("Añadir Préstamo");
+            JButton addLoanButton = new StyledButton("Añadir Préstamo");
             addLoanButton.addActionListener(e -> addPrestamo());
             buttonPanel.add(addLoanButton);
 
-            JButton markAsReturnedButton = new JButton("Marcar como Devuelto");
+            JButton markAsReturnedButton = new StyledButton("Marcar como Devuelto");
             markAsReturnedButton.addActionListener(e -> updateReturnStatus(true));
             buttonPanel.add(markAsReturnedButton);
 
-            JButton markAsNotReturnedButton = new JButton("Marcar como No Devuelto");
+            JButton markAsNotReturnedButton = new StyledButton("Marcar como No Devuelto");
             markAsNotReturnedButton.addActionListener(e -> updateReturnStatus(false));
             buttonPanel.add(markAsNotReturnedButton);
         }
 
-        JButton backButton = new JButton("Volver al Menú Principal");
+        JButton backButton = new StyledButton("Volver al Menú Principal");
         backButton.addActionListener(e -> {
             dispose();
             new MenuPrincipal(isAdmin, currentUser).setVisible(true);
@@ -202,3 +241,4 @@ public class VistaPrestamos extends JFrame {
         }
     }
 }
+

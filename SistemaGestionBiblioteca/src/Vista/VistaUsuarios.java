@@ -23,6 +23,7 @@ public class VistaUsuarios extends JFrame {
     public VistaUsuarios(boolean isAdmin, String currentUser) {
         setTitle("Gestión de Usuarios");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setSize(800, 600);
         setLocationRelativeTo(null);
 

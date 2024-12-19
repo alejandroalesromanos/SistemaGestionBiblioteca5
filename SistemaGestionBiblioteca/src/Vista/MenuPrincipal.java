@@ -5,14 +5,13 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class MenuPrincipal extends JFrame {
-
     private static final long serialVersionUID = 1L;
 
     public MenuPrincipal(boolean isAdmin, String currentUser) {
         setTitle("Menú Principal");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(true);
 
         // Fondo personalizado con gradiente
         JPanel fondoPanel = new JPanel() {
@@ -47,8 +46,7 @@ public class MenuPrincipal extends JFrame {
 
         // Botón para gestión de usuarios (solo para administradores)
         if (isAdmin) {
-            JButton userManagementButton = new JButton("Gestión de Usuarios");
-            userManagementButton.setFont(new Font("Arial", Font.PLAIN, 14));
+            JButton userManagementButton = createStyledButton("Gestión de Usuarios");
             userManagementButton.addActionListener(e -> {
                 new VistaUsuarios(isAdmin, currentUser).setVisible(true);
                 dispose();
@@ -58,8 +56,7 @@ public class MenuPrincipal extends JFrame {
         }
 
         // Botón para vista de libros
-        JButton bookManagementButton = new JButton("Vista de Libros");
-        bookManagementButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        JButton bookManagementButton = createStyledButton("Vista de Libros");
         bookManagementButton.addActionListener(e -> {
             new VistaLibros(isAdmin, currentUser).setVisible(true);
             dispose();
@@ -68,17 +65,16 @@ public class MenuPrincipal extends JFrame {
         fondoPanel.add(bookManagementButton, gbc);
 
         // Botón para préstamos y devoluciones
-        JButton loansAndReturnsButton = new JButton("Préstamos y Devoluciones");
-        loansAndReturnsButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        JButton loansAndReturnsButton = createStyledButton("Préstamos y Devoluciones");
         loansAndReturnsButton.addActionListener(e -> {
-        	new VistaPrestamos(isAdmin, currentUser).setVisible(true);
+            new VistaPrestamos(isAdmin, currentUser).setVisible(true);
+            dispose();
         });
         gbc.gridy = 3;
         fondoPanel.add(loansAndReturnsButton, gbc);
 
         // Botón para notificaciones
-        JButton notificationsButton = new JButton("Notificaciones");
-        notificationsButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        JButton notificationsButton = createStyledButton("Notificaciones");
         notificationsButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, "Acceso a Notificaciones.");
         });
@@ -86,13 +82,38 @@ public class MenuPrincipal extends JFrame {
         fondoPanel.add(notificationsButton, gbc);
 
         // Botón para cerrar sesión
-        JButton logoutButton = new JButton("Cerrar Sesión");
-        logoutButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        JButton logoutButton = createStyledButton("Cerrar Sesión");
         logoutButton.addActionListener(e -> {
-            dispose();
             new VistaLogin().setVisible(true);
+            dispose();
         });
         gbc.gridy = 5;
         fondoPanel.add(logoutButton, gbc);
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setForeground(Color.WHITE);
+        button.setBackground(new Color(52, 152, 219));
+        button.setBorderPainted(true);
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(false);
+        button.setOpaque(true);
+        button.setPreferredSize(new Dimension(250, 40));
+        button.setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
+        
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(41, 128, 185));
+                button.setBorder(BorderFactory.createLineBorder(new Color(52, 152, 219), 2));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(52, 152, 219));
+                button.setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
+            }
+        });
+
+        return button;
     }
 }
