@@ -98,7 +98,7 @@ public class VistaNotificaciones extends JFrame {
                 tableModel.addRow(new Object[]{id, mensaje, fecha});
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar notificaciones: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al cargar notificaciones : " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
