@@ -76,7 +76,8 @@ public class MenuPrincipal extends JFrame {
         // Botón para notificaciones
         JButton notificationsButton = createStyledButton("Notificaciones");
         notificationsButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Acceso a Notificaciones.");
+            new VistaNotificaciones(isAdmin, currentUser).setVisible(true);
+            dispose();
         });
         gbc.gridy = 4;
         fondoPanel.add(notificationsButton, gbc);
@@ -102,12 +103,13 @@ public class MenuPrincipal extends JFrame {
         button.setOpaque(true);
         button.setPreferredSize(new Dimension(250, 40));
         button.setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
-        
+
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(41, 128, 185));
                 button.setBorder(BorderFactory.createLineBorder(new Color(52, 152, 219), 2));
             }
+
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(52, 152, 219));
                 button.setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
