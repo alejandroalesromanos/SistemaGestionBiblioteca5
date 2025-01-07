@@ -21,7 +21,7 @@ public class GestorNotificaciones {
 			stmt.setInt(1, idUsuario);
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
-					Notificacion notificacion = new Notificacion(rs.getInt("ID"), rs.getString("Mensaje"), rs.getInt("ID_Usuario"), rs.getInt("ID_Libro"), rs.getDate("Fecha"), rs.getBoolean("Leido"));
+					Notificacion notificacion = new Notificacion(rs.getInt("ID"), rs.getInt("ID_Usuario"), rs.getString("Mensaje"), rs.getInt("ID_Libro"), rs.getDate("Fecha"), rs.getBoolean("Leido"));
 					notificaciones.add(notificacion);
 				}
 			}
@@ -56,5 +56,7 @@ public class GestorNotificaciones {
 			return false;
 		}
 	}
+	
+	
 	
 }
