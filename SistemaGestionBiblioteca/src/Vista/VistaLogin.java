@@ -6,13 +6,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.RoundRectangle2D;
+
 import modelo.GestorLogin;
 
 public class VistaLogin extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JTextField emailField;
-    private JPasswordField passwordField;  // Changed to JPasswordField
+    private JPasswordField passwordField;
     private JButton loginButton;
     private JPanel contentPanel;
     
@@ -35,7 +37,6 @@ public class VistaLogin extends JFrame {
         setSize(450, 600);
         setLocationRelativeTo(null);
 
-        // Add resize listener
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -43,7 +44,6 @@ public class VistaLogin extends JFrame {
             }
         });
 
-        // Main background panel with gradient
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -61,7 +61,6 @@ public class VistaLogin extends JFrame {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         setContentPane(mainPanel);
 
-        // Content Panel
         contentPanel = createContentPanel();
         mainPanel.add(Box.createVerticalGlue());
         mainPanel.add(contentPanel);
@@ -71,24 +70,19 @@ public class VistaLogin extends JFrame {
     private void revalidateLayout() {
         int width = getWidth();
         
-        // Calculate responsive font sizes
         int titleFontSize = Math.max(24, Math.min(32, width / 15));
         int fieldFontSize = Math.max(12, Math.min(14, width / 30));
         int buttonFontSize = Math.max(12, Math.min(14, width / 30));
         
-        // Calculate responsive field width
         int fieldWidth = Math.max(200, Math.min(300, width - 100));
         
-        // Update component sizes
         updateComponentSizes(fieldWidth, titleFontSize, fieldFontSize, buttonFontSize);
         
-        // Revalidate and repaint
         contentPanel.revalidate();
         contentPanel.repaint();
     }
 
     private void updateComponentSizes(int fieldWidth, int titleFontSize, int fieldFontSize, int buttonFontSize) {
-        // Update title font
         Component[] components = contentPanel.getComponents();
         for (Component comp : components) {
             if (comp instanceof JLabel) {
@@ -101,17 +95,15 @@ public class VistaLogin extends JFrame {
             }
         }
 
-        // Update fields size
-        Dimension fieldDimension = new Dimension(fieldWidth, 60);
+        Dimension fieldDimension = new Dimension(fieldWidth, 50);
         emailField.setPreferredSize(fieldDimension);
         emailField.setMaximumSize(fieldDimension);
         emailField.setMinimumSize(fieldDimension);
-        passwordField.setPreferredSize(fieldDimension);  // Updated to passwordField
+        passwordField.setPreferredSize(fieldDimension);
         passwordField.setMaximumSize(fieldDimension);
         passwordField.setMinimumSize(fieldDimension);
         
-        // Update button size
-        Dimension buttonDimension = new Dimension(Math.min(200, fieldWidth), 40);
+        Dimension buttonDimension = new Dimension(Math.min(200, fieldWidth), 50);
         loginButton.setPreferredSize(buttonDimension);
         loginButton.setMaximumSize(buttonDimension);
         loginButton.setFont(new Font("Segoe UI", Font.BOLD, buttonFontSize));
@@ -122,10 +114,8 @@ public class VistaLogin extends JFrame {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
         
-        // Dynamic padding based on window size
         panel.setBorder(new EmptyBorder(30, 40, 30, 40));
 
-        // Logo and Title
         JLabel titleLabel = new JLabel("Sistema Gestor de Biblioteca");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
@@ -134,16 +124,14 @@ public class VistaLogin extends JFrame {
         
         panel.add(Box.createVerticalStrut(30));
 
-        // Form fields
         emailField = createStyledTextField("Ingrese su correo electrónico");
-        passwordField = createPasswordField();  // Changed to createPasswordField
+        passwordField = createPasswordField();
         
         panel.add(createFieldPanel("Correo Electrónico", emailField));
         panel.add(Box.createVerticalStrut(20));
         panel.add(createFieldPanel("Contraseña", passwordField));
         panel.add(Box.createVerticalStrut(30));
 
-        // Login button
         loginButton = createStyledButton("Iniciar Sesión");
         panel.add(loginButton);
 
@@ -151,17 +139,26 @@ public class VistaLogin extends JFrame {
     }
 
     private JTextField createStyledTextField(String placeholder) {
-        JTextField field = new JTextField();
+        JTextField field = new JTextField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (!isOpaque() && getBorder() instanceof RoundedBorder) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(getBackground());
+                    g2.fill(((RoundedBorder) getBorder()).getBorderShape(0, 0, getWidth() - 1, getHeight() - 1));
+                    g2.dispose();
+                }
+                super.paintComponent(g);
+            }
+        };
+        field.setOpaque(false);
         field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         field.setBackground(new Color(255, 255, 255, 230));
         field.setForeground(Color.BLACK);
         field.setCaretColor(Color.BLACK);
-        field.setBorder(BorderFactory.createCompoundBorder(
-            new RoundedBorder(8, Color.WHITE),
-            BorderFactory.createEmptyBorder(8, 10, 8, 10)
-        ));
+        field.setBorder(new RoundedBorder(25, Color.WHITE));
         
-        // Add placeholder
         field.setText(placeholder);
         field.setForeground(Color.GRAY);
         
@@ -172,10 +169,7 @@ public class VistaLogin extends JFrame {
                     field.setText("");
                     field.setForeground(Color.BLACK);
                 }
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    new RoundedBorder(8, accentColor),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-                ));
+                field.setBorder(new RoundedBorder(25, accentColor));
             }
 
             @Override
@@ -184,21 +178,17 @@ public class VistaLogin extends JFrame {
                     field.setText(placeholder);
                     field.setForeground(Color.GRAY);
                 }
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    new RoundedBorder(8, Color.WHITE),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-                ));
+                field.setBorder(new RoundedBorder(25, Color.WHITE));
                 validateField(field);
             }
         });
         
-        // Make fields responsive
-        Dimension fieldSize = new Dimension(300, 60); // Fixed height and width
+        Dimension fieldSize = new Dimension(300, 50);
         field.setPreferredSize(fieldSize);
         field.setMaximumSize(fieldSize);
         field.setMinimumSize(fieldSize);
+        field.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Add input validation
         field.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -226,15 +216,25 @@ public class VistaLogin extends JFrame {
     }
 
     private JPasswordField createPasswordField() {
-        JPasswordField field = new JPasswordField();
+        JPasswordField field = new JPasswordField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (!isOpaque() && getBorder() instanceof RoundedBorder) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(getBackground());
+                    g2.fill(((RoundedBorder) getBorder()).getBorderShape(0, 0, getWidth() - 1, getHeight() - 1));
+                    g2.dispose();
+                }
+                super.paintComponent(g);
+            }
+        };
+        field.setOpaque(false);
         field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         field.setBackground(new Color(255, 255, 255, 230));
         field.setForeground(Color.BLACK);
         field.setCaretColor(Color.BLACK);
-        field.setBorder(BorderFactory.createCompoundBorder(
-            new RoundedBorder(8, Color.WHITE),
-            BorderFactory.createEmptyBorder(8, 10, 8, 10)
-        ));
+        field.setBorder(new RoundedBorder(25, Color.WHITE));
 
         field.addFocusListener(new FocusAdapter() {
             @Override
@@ -243,10 +243,7 @@ public class VistaLogin extends JFrame {
                     field.setText("");
                     field.setForeground(Color.BLACK);
                 }
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    new RoundedBorder(8, accentColor),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-                ));
+                field.setBorder(new RoundedBorder(25, accentColor));
             }
 
             @Override
@@ -255,18 +252,15 @@ public class VistaLogin extends JFrame {
                     field.setText("Ingrese su contraseña");
                     field.setForeground(Color.GRAY);
                 }
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    new RoundedBorder(8, Color.WHITE),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-                ));
+                field.setBorder(new RoundedBorder(25, Color.WHITE));
             }
         });
         
-        // Make fields responsive
-        Dimension fieldSize = new Dimension(300, 60); // Fixed height and width
+        Dimension fieldSize = new Dimension(300, 50);
         field.setPreferredSize(fieldSize);
         field.setMaximumSize(fieldSize);
         field.setMinimumSize(fieldSize);
+        field.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         return field;
     }
@@ -275,15 +269,9 @@ public class VistaLogin extends JFrame {
         if (field == emailField && !field.getText().equals("Ingrese su correo electrónico")) {
             String email = field.getText();
             if (!email.isEmpty() && !isValidEmail(email)) {
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    new RoundedBorder(8, errorColor),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-                ));
+                field.setBorder(new RoundedBorder(25, errorColor));
             } else if (!email.isEmpty()) {
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    new RoundedBorder(8, validColor),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-                ));
+                field.setBorder(new RoundedBorder(25, validColor));
             }
         }
     }
@@ -302,8 +290,8 @@ public class VistaLogin extends JFrame {
         JLabel label = new JLabel(labelText);
         label.setFont(new Font("Segoe UI", Font.BOLD, 12));
         label.setForeground(Color.WHITE);
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        label.setBorder(BorderFactory.createEmptyBorder(0, 2, 5, 0));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);  // Cambiado de LEFT_ALIGNMENT a CENTER_ALIGNMENT
+        label.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));  // Eliminado el padding izquierdo
 
         panel.add(label);
         panel.add(field);
@@ -324,8 +312,9 @@ public class VistaLogin extends JFrame {
                 } else {
                     g2.setColor(primaryColor);
                 }
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 25, 25));
                 g2.dispose();
+
                 super.paintComponent(g);
             }
         };
@@ -340,8 +329,7 @@ public class VistaLogin extends JFrame {
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.addActionListener(e -> handleLogin());
 
-        // Make button responsive
-        Dimension buttonSize = new Dimension(200, 40);
+        Dimension buttonSize = new Dimension(200, 50);
         button.setPreferredSize(buttonSize);
         button.setMaximumSize(buttonSize);
         
@@ -350,9 +338,8 @@ public class VistaLogin extends JFrame {
 
     private void handleLogin() {
         String email = emailField.getText();
-        String password = passwordField.getText();
+        String password = new String(passwordField.getPassword());
 
-        // Check if fields contain placeholder text
         if (email.equals("Ingrese su correo electrónico") || 
             password.equals("Ingrese su contraseña")) {
             showErrorMessage("Por favor, complete todos los campos.");
@@ -369,18 +356,15 @@ public class VistaLogin extends JFrame {
             return;
         }
 
-        // Si la validación de credenciales es exitosa
         GestorLogin gestionLogin = new GestorLogin();
         boolean valid = gestionLogin.validateCredentials(email, password, this);
 
         if (valid) {
-            // Cierra la ventana de login si las credenciales son correctas
             this.dispose();
         } else {
             showErrorMessage("Credenciales incorrectas, por favor intente nuevamente.");
         }
     }
-
 
     public void showErrorMessage(String message) {
         JOptionPane.showMessageDialog(
@@ -405,13 +389,17 @@ public class VistaLogin extends JFrame {
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setColor(color);
-            g2d.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
+            g2d.draw(getBorderShape(x, y, width - 1, height - 1));
             g2d.dispose();
+        }
+
+        public Shape getBorderShape(int x, int y, int width, int height) {
+            return new RoundRectangle2D.Float(x, y, width, height, radius, radius);
         }
 
         @Override
         public Insets getBorderInsets(Component c) {
-            return new Insets(radius, radius, radius, radius);
+            return new Insets(radius / 2, radius / 2, radius / 2, radius / 2);
         }
 
         @Override
@@ -420,3 +408,4 @@ public class VistaLogin extends JFrame {
         }
     }
 }
+

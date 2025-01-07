@@ -15,19 +15,15 @@ public class VistaUsuarios extends JFrame {
     private JTable userTable;
     private DefaultTableModel tableModel;
 
-    private JButton addUserButton;
-    private JButton deleteUserButton;
-    private JButton editUserButton;
-    private JButton backButton;
-
     public VistaUsuarios(boolean isAdmin, String currentUser) {
         setTitle("Gestión de Usuarios");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setSize(800, 600);
+        setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(null);
 
-        // Fondo personalizado con gradiente
+        // Fondo personalizado
         JPanel fondoPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -41,79 +37,104 @@ public class VistaUsuarios extends JFrame {
                 g2d.dispose();
             }
         };
+        fondoPanel.setLayout(new BorderLayout());
         fondoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        fondoPanel.setLayout(new GridBagLayout());
         setContentPane(fondoPanel);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.BOTH;
-
-        // Etiqueta de título
-        JLabel titleLabel = new JLabel("Lista de Usuarios", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial Black", Font.BOLD, 20));
+        // Título de la ventana
+        JLabel titleLabel = new JLabel("Gestión de Usuarios", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial Black", Font.BOLD, 24));
         titleLabel.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1.0;
-        fondoPanel.add(titleLabel, gbc);
+        fondoPanel.add(titleLabel, BorderLayout.NORTH);
 
         // Tabla de usuarios
-        tableModel = new DefaultTableModel(new Object[][] {},
-                new String[] { "ID", "DNI", "Nombre", "Apellidos", "Email", "Teléfono", "Rol" });
+        tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID", "DNI", "Nombre", "Apellidos", "Email", "Teléfono", "Rol"}) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         userTable = new JTable(tableModel);
-        userTable.setFillsViewportHeight(true);
+        userTable.setRowHeight(25);
+        userTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        userTable.getTableHeader().setBackground(new Color(41, 128, 185));
+        userTable.getTableHeader().setForeground(Color.WHITE);
+        userTable.setFont(new Font("Arial", Font.PLAIN, 14));
+
         JScrollPane scrollPane = new JScrollPane(userTable);
-        gbc.gridy = 1;
-        gbc.weighty = 1.0;
-        fondoPanel.add(scrollPane, gbc);
+        fondoPanel.add(scrollPane, BorderLayout.CENTER);
 
-        gbc.weighty = 0; // Reinicia el peso vertical para los botones
+        // Panel de botones
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 10, 10));
+        buttonPanel.setOpaque(false);
+        buttonPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Botones
-        if (isAdmin) {
-            addUserButton = createButton("Añadir Usuario", e -> showAddUserForm());
-            gbc.gridy = 2;
-            gbc.gridwidth = 1;
-            gbc.weightx = 0.5;
-            fondoPanel.add(addUserButton, gbc);
+        // Custom button style
+        class StyledButton extends JButton {
+            public StyledButton(String text) {
+                super(text);
+                setFont(new Font("Arial", Font.BOLD, 14));
+                setForeground(Color.WHITE);
+                setBackground(new Color(52, 152, 219));
+                setBorderPainted(true);
+                setFocusPainted(false);
+                setContentAreaFilled(false);
+                setOpaque(true);
+                setPreferredSize(new Dimension(250, 40));
+                setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseEntered(java.awt.event.MouseEvent evt) {
+                        setBackground(new Color(41, 128, 185));
+                        setBorder(BorderFactory.createLineBorder(new Color(52, 152, 219), 2));
+                    }
+                    public void mouseExited(java.awt.event.MouseEvent evt) {
+                        setBackground(new Color(52, 152, 219));
+                        setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
+                    }
+                });
+            }
 
-            deleteUserButton = createButton("Eliminar Usuario", e -> deleteUser());
-            gbc.gridx = 1;
-            fondoPanel.add(deleteUserButton, gbc);
-
-            editUserButton = createButton("Editar Usuario", e -> editUser());
-            gbc.gridy = 3;
-            gbc.gridx = 0;
-            gbc.gridwidth = 2;
-            fondoPanel.add(editUserButton, gbc);
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (getModel().isArmed()) {
+                    g.setColor(new Color(31, 97, 141));
+                } else {
+                    g.setColor(getBackground());
+                }
+                g.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 10, 10);
+                super.paintComponent(g);
+            }
         }
 
-        backButton = createButton("Volver al Menú Principal", e -> {
+      
+
+        if (isAdmin) {
+            JButton addUserButton = new StyledButton("Añadir Usuario");
+            addUserButton.addActionListener(e -> showAddUserForm());
+            buttonPanel.add(addUserButton);
+
+            JButton editUserButton = new StyledButton("Editar Usuario");
+            editUserButton.addActionListener(e -> editUser());
+            buttonPanel.add(editUserButton);
+
+            JButton deleteUserButton = new StyledButton("Eliminar Usuario");
+            deleteUserButton.addActionListener(e -> deleteUser());
+            buttonPanel.add(deleteUserButton);
+        }
+
+        JButton backButton = new StyledButton("Volver al Menú Principal");
+        backButton.addActionListener(e -> {
             dispose();
             new MenuPrincipal(isAdmin, currentUser).setVisible(true);
         });
-        gbc.gridy = 4;
-        fondoPanel.add(backButton, gbc);
+        buttonPanel.add(backButton);
 
-        // Cargar usuarios
+        fondoPanel.add(buttonPanel, BorderLayout.EAST);
+
+        // Cargar usuarios al inicio
         loadUsers();
     }
 
-    /**
-     * Método para crear botones con estilo consistente.
-     */
-    private JButton createButton(String text, ActionListener action) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Arial", Font.PLAIN, 14));
-        button.addActionListener(action);
-        return button;
-    }
-
-    /**
-     * Método para cargar usuarios en la tabla.
-     */
     private void loadUsers() {
         try (Connection connection = new Db().getConnection();
              Statement statement = connection.createStatement();
@@ -139,45 +160,72 @@ public class VistaUsuarios extends JFrame {
         }
     }
 
-    /**
-     * Método para añadir un usuario.
-     */
     private void showAddUserForm() {
-        JPanel panel = new JPanel(new GridLayout(7, 2, 10, 10));
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
 
-        JTextField dniField = new JTextField();
-        JTextField nombreField = new JTextField();
-        JTextField apellidosField = new JTextField();
-        JTextField emailField = new JTextField();
-        JTextField telefonoField = new JTextField();
+        JTextField dniField = new JTextField(20);
+        JTextField nombreField = new JTextField(20);
+        JTextField apellidosField = new JTextField(20);
+        JTextField emailField = new JTextField(20);
+        JTextField telefonoField = new JTextField(20);
         JComboBox<String> roleComboBox = new JComboBox<>(new String[] { "Administrador", "Usuario estándar" });
-        JPasswordField passwordField = new JPasswordField();
+        JPasswordField passwordField = new JPasswordField(20);
 
-        panel.add(new JLabel("DNI:"));
-        panel.add(dniField);
-        panel.add(new JLabel("Nombre:"));
-        panel.add(nombreField);
-        panel.add(new JLabel("Apellidos:"));
-        panel.add(apellidosField);
-        panel.add(new JLabel("Email:"));
-        panel.add(emailField);
-        panel.add(new JLabel("Teléfono:"));
-        panel.add(telefonoField);
-        panel.add(new JLabel("Rol:"));
-        panel.add(roleComboBox);
-        panel.add(new JLabel("Contraseña:"));
-        panel.add(passwordField);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(new JLabel("DNI:"), gbc);
+        gbc.gridx = 1;
+        panel.add(dniField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel.add(new JLabel("Nombre:"), gbc);
+        gbc.gridx = 1;
+        panel.add(nombreField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        panel.add(new JLabel("Apellidos:"), gbc);
+        gbc.gridx = 1;
+        panel.add(apellidosField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        panel.add(new JLabel("Email:"), gbc);
+        gbc.gridx = 1;
+        panel.add(emailField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        panel.add(new JLabel("Teléfono:"), gbc);
+        gbc.gridx = 1;
+        panel.add(telefonoField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        panel.add(new JLabel("Rol:"), gbc);
+        gbc.gridx = 1;
+        panel.add(roleComboBox, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        panel.add(new JLabel("Contraseña:"), gbc);
+        gbc.gridx = 1;
+        panel.add(passwordField, gbc);
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Añadir Usuario", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
-            String dni = dniField.getText();
-            String nombre = nombreField.getText();
-            String apellidos = apellidosField.getText();
-            String email = emailField.getText();
-            String telefono = telefonoField.getText();
+            String dni = dniField.getText().trim();
+            String nombre = nombreField.getText().trim();
+            String apellidos = apellidosField.getText().trim();
+            String email = emailField.getText().trim();
+            String telefono = telefonoField.getText().trim();
             String rol = (String) roleComboBox.getSelectedItem();
             String password = new String(passwordField.getPassword());
 
@@ -200,15 +248,14 @@ public class VistaUsuarios extends JFrame {
                 ps.setString(7, password);
                 ps.executeUpdate();
                 loadUsers();
+                JOptionPane.showMessageDialog(this, "Usuario añadido con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Error al añadir usuario: " + e.getMessage(), "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
         }
     }
-    /**
-     * Método para eliminar un usuario.
-     */
+
     private void deleteUser() {
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -219,20 +266,21 @@ public class VistaUsuarios extends JFrame {
 
         int userId = (int) tableModel.getValueAt(selectedRow, 0);
 
-        try (Connection connection = new Db().getConnection();
-             PreparedStatement ps = connection.prepareStatement("DELETE FROM usuarios WHERE ID = ?")) {
-            ps.setInt(1, userId);
-            ps.executeUpdate();
-            loadUsers();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al eliminar usuario: " + e.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
+        int confirmOption = JOptionPane.showConfirmDialog(this, "¿Está seguro de que desea eliminar este usuario?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+        if (confirmOption == JOptionPane.YES_OPTION) {
+            try (Connection connection = new Db().getConnection();
+                 PreparedStatement ps = connection.prepareStatement("DELETE FROM usuarios WHERE ID = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+                loadUsers();
+                JOptionPane.showMessageDialog(this, "Usuario eliminado con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar usuario: " + e.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
-    /**
-     * Método para editar un usuario.
-     */
     private void editUser() {
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -249,50 +297,79 @@ public class VistaUsuarios extends JFrame {
         String telefono = (String) tableModel.getValueAt(selectedRow, 5);
         String rol = (String) tableModel.getValueAt(selectedRow, 6);
 
-        JTextField dniField = new JTextField(dni);
-        JTextField nombreField = new JTextField(nombre);
-        JTextField apellidosField = new JTextField(apellidos);
-        JTextField emailField = new JTextField(email);
-        JTextField telefonoField = new JTextField(telefono);
-        String[] roles = { "Administrador", "Usuario estándar" };
-        JComboBox<String> roleComboBox = new JComboBox<>(roles);
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        JTextField dniField = new JTextField(dni, 20);
+        JTextField nombreField = new JTextField(nombre, 20);
+        JTextField apellidosField = new JTextField(apellidos, 20);
+        JTextField emailField = new JTextField(email, 20);
+        JTextField telefonoField = new JTextField(telefono, 20);
+        JComboBox<String> roleComboBox = new JComboBox<>(new String[]{"Administrador", "Usuario estándar"});
         roleComboBox.setSelectedItem(rol);
 
-        JPanel panel = new JPanel(new GridLayout(0, 1));
-        panel.add(new JLabel("DNI:"));
-        panel.add(dniField);
-        panel.add(new JLabel("Nombre:"));
-        panel.add(nombreField);
-        panel.add(new JLabel("Apellidos:"));
-        panel.add(apellidosField);
-        panel.add(new JLabel("Email:"));
-        panel.add(emailField);
-        panel.add(new JLabel("Teléfono:"));
-        panel.add(telefonoField);
-        panel.add(new JLabel("Rol:"));
-        panel.add(roleComboBox);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(new JLabel("DNI:"), gbc);
+        gbc.gridx = 1;
+        panel.add(dniField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel.add(new JLabel("Nombre:"), gbc);
+        gbc.gridx = 1;
+        panel.add(nombreField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        panel.add(new JLabel("Apellidos:"), gbc);
+        gbc.gridx = 1;
+        panel.add(apellidosField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        panel.add(new JLabel("Email:"), gbc);
+        gbc.gridx = 1;
+        panel.add(emailField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        panel.add(new JLabel("Teléfono:"), gbc);
+        gbc.gridx = 1;
+        panel.add(telefonoField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        panel.add(new JLabel("Rol:"), gbc);
+        gbc.gridx = 1;
+        panel.add(roleComboBox, gbc);
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Editar Usuario", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
-        if (result != JOptionPane.OK_OPTION) {
-            return;
-        }
-
-        try (Connection connection = new Db().getConnection();
-             PreparedStatement ps = connection.prepareStatement(
-                     "UPDATE usuarios SET DNI = ?, Nombre = ?, Apellidos = ?, Email = ?, Telefono = ?, Rol = ? WHERE ID = ?")) {
-            ps.setString(1, dniField.getText());
-            ps.setString(2, nombreField.getText());
-            ps.setString(3, apellidosField.getText());
-            ps.setString(4, emailField.getText());
-            ps.setString(5, telefonoField.getText());
-            ps.setString(6, (String) roleComboBox.getSelectedItem());
-            ps.setInt(7, userId);
-            ps.executeUpdate();
-            loadUsers();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al editar usuario: " + e.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
+        if (result == JOptionPane.OK_OPTION) {
+            try (Connection connection = new Db().getConnection();
+                 PreparedStatement ps = connection.prepareStatement(
+                         "UPDATE usuarios SET DNI = ?, Nombre = ?, Apellidos = ?, Email = ?, Telefono = ?, Rol = ? WHERE ID = ?")) {
+                ps.setString(1, dniField.getText());
+                ps.setString(2, nombreField.getText());
+                ps.setString(3, apellidosField.getText());
+                ps.setString(4, emailField.getText());
+                ps.setString(5, telefonoField.getText());
+                ps.setString(6, (String) roleComboBox.getSelectedItem());
+                ps.setInt(7, userId);
+                ps.executeUpdate();
+                loadUsers();
+                JOptionPane.showMessageDialog(this, "Usuario editado con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al editar usuario: " + e.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
+
+
 }
+
