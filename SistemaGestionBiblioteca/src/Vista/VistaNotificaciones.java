@@ -12,10 +12,11 @@ public class VistaNotificaciones extends JFrame {
     private JTable notificationsTable;
     private DefaultTableModel tableModel;
 
-    public VistaNotificaciones(boolean isAdmin, String currentUser) {
+    public VistaNotificaciones(boolean isAdmin, String currentUser, String emailUser) {
         setTitle("Vista de Notificaciones");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Forzar pantalla completa
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setResizable(false);// Forzar pantalla completa
 
         // Fondo personalizado
         JPanel fondoPanel = new JPanel() {
@@ -75,7 +76,7 @@ public class VistaNotificaciones extends JFrame {
         JButton backButton = new JButton("Volver al Menú Principal");
         backButton.addActionListener(e -> {
             dispose();
-            new MenuPrincipal(isAdmin, currentUser).setVisible(true);
+            new MenuPrincipal(isAdmin, currentUser, emailUser).setVisible(true);
         });
         buttonPanel.add(backButton);
 

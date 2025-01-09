@@ -7,7 +7,7 @@ public class GestorLogin {
 
     public boolean validateCredentials(String email, String password, Vista.VistaLogin vista) {
         try (Connection connection = new Db().getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT Nombre, Apellidos, Rol FROM usuarios WHERE Email = ? AND password = ?")) {
+             PreparedStatement ps = connection.prepareStatement("SELECT Nombre, Apellidos, Email, Rol FROM usuarios WHERE Email = ? AND password = ?")) {
             
             ps.setString(1, email);
             ps.setString(2, password);
@@ -15,11 +15,12 @@ public class GestorLogin {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String role = rs.getString("Rol");
+                    String emailUser = rs.getString("Email");
                     String nombreCompleto = rs.getString("Nombre") + " " + rs.getString("Apellidos");
                     
                     // Close the login window and open the main menu based on role
                     vista.dispose();
-                    openMainMenu(role.equals("Administrador"), nombreCompleto);
+                    openMainMenu(role.equals("Administrador"), nombreCompleto, emailUser);
                     return true;
                 } else {
                     vista.showErrorMessage("Credenciales incorrectas.");
@@ -32,7 +33,7 @@ public class GestorLogin {
         }
     }
 
-    private void openMainMenu(boolean isAdmin, String nombreCompleto) {
-        SwingUtilities.invokeLater(() -> new Vista.MenuPrincipal(isAdmin, nombreCompleto).setVisible(true));
+    private void openMainMenu(boolean isAdmin, String nombreCompleto, String emailUser) {
+        SwingUtilities.invokeLater(() -> new Vista.MenuPrincipal(isAdmin, nombreCompleto, emailUser).setVisible(true));
     }
 }

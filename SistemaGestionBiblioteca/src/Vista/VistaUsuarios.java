@@ -15,13 +15,14 @@ public class VistaUsuarios extends JFrame {
     private JTable userTable;
     private DefaultTableModel tableModel;
 
-    public VistaUsuarios(boolean isAdmin, String currentUser) {
+    public VistaUsuarios(boolean isAdmin, String currentUser, String emailUser) {
         setTitle("Gestión de Usuarios");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setSize(800, 600);
         setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(null);
+        setResizable(false);
 
         // Fondo personalizado
         JPanel fondoPanel = new JPanel() {
@@ -125,7 +126,7 @@ public class VistaUsuarios extends JFrame {
         JButton backButton = new StyledButton("Volver al Menú Principal");
         backButton.addActionListener(e -> {
             dispose();
-            new MenuPrincipal(isAdmin, currentUser).setVisible(true);
+            new MenuPrincipal(isAdmin, currentUser, emailUser).setVisible(true);
         });
         buttonPanel.add(backButton);
 

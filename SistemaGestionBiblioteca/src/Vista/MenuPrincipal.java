@@ -7,11 +7,12 @@ import javax.swing.border.EmptyBorder;
 public class MenuPrincipal extends JFrame {
     private static final long serialVersionUID = 1L;
 
-    public MenuPrincipal(boolean isAdmin, String currentUser) {
+    public MenuPrincipal(boolean isAdmin, String currentUser, String emailUser) {
         setTitle("Menú Principal");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(true);
+        setResizable(false);   // Impide que la ventana cambie de tamaño (opcional)
+        setLocationRelativeTo(null); 
 
         // Fondo personalizado con gradiente
         JPanel fondoPanel = new JPanel() {
@@ -48,7 +49,7 @@ public class MenuPrincipal extends JFrame {
         if (isAdmin) {
             JButton userManagementButton = createStyledButton("Gestión de Usuarios");
             userManagementButton.addActionListener(e -> {
-                new VistaUsuarios(isAdmin, currentUser).setVisible(true);
+                new VistaUsuarios(isAdmin, currentUser, emailUser).setVisible(true);
                 dispose();
             });
             gbc.gridy = 1;
@@ -58,7 +59,7 @@ public class MenuPrincipal extends JFrame {
         // Botón para vista de libros
         JButton bookManagementButton = createStyledButton("Vista de Libros");
         bookManagementButton.addActionListener(e -> {
-            new VistaLibros(isAdmin, currentUser).setVisible(true);
+            new VistaLibros(isAdmin, currentUser, emailUser).setVisible(true);
             dispose();
         });
         gbc.gridy = 2;
@@ -67,7 +68,7 @@ public class MenuPrincipal extends JFrame {
         // Botón para préstamos y devoluciones
         JButton loansAndReturnsButton = createStyledButton("Préstamos y Devoluciones");
         loansAndReturnsButton.addActionListener(e -> {
-            new VistaPrestamos(isAdmin, currentUser).setVisible(true);
+            new VistaPrestamos(isAdmin, currentUser, emailUser).setVisible(true);
             dispose();
         });
         gbc.gridy = 3;
@@ -76,20 +77,23 @@ public class MenuPrincipal extends JFrame {
         // Botón para notificaciones
         JButton notificationsButton = createStyledButton("Notificaciones");
         notificationsButton.addActionListener(e -> {
-            new VistaNotificaciones(isAdmin, currentUser).setVisible(true);
+            new VistaNotificaciones(isAdmin, currentUser, emailUser).setVisible(true);
             dispose();
         });
         gbc.gridy = 4;
         fondoPanel.add(notificationsButton, gbc);
 
-        // Botón para cerrar sesión
+     // Botón para cerrar sesión
         JButton logoutButton = createStyledButton("Cerrar Sesión");
         logoutButton.addActionListener(e -> {
-            new VistaLogin().setVisible(true);
-            dispose();
+            VistaLogin loginView = new VistaLogin();
+            loginView.setSize(700, 500);  // Ajusta el tamaño de la ventana de inicio de sesión
+            loginView.setVisible(true);   // Luego haz visible la ventana
+            dispose();                   // Cierra la ventana actual
         });
         gbc.gridy = 5;
         fondoPanel.add(logoutButton, gbc);
+
     }
 
     private JButton createStyledButton(String text) {
