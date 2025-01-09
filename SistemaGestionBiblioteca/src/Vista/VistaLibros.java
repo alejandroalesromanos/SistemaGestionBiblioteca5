@@ -5,6 +5,9 @@ import java.sql.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
+import com.toedter.calendar.JDateChooser;
+
 import modelo.Db;
 import java.awt.event.ActionListener;
 import java.time.Year;
@@ -127,7 +130,7 @@ public class VistaLibros extends JFrame {
         JTextField autorField = new JTextField();
         JTextField generoField = new JTextField();
         JCheckBox disponibilidadBox = new JCheckBox("Disponible");
-        JTextField fechaPublicacionField = new JTextField("YYYY-MM-DD");
+        JDateChooser fechaPublicacionChooser = new JDateChooser();  // Usamos JDateChooser
 
         panel.add(new JLabel("Título:"));
         panel.add(tituloField);
@@ -137,8 +140,8 @@ public class VistaLibros extends JFrame {
         panel.add(generoField);
         panel.add(new JLabel("Disponibilidad:"));
         panel.add(disponibilidadBox);
-        panel.add(new JLabel("Fecha de Publicación (YYYY-MM-DD):"));
-        panel.add(fechaPublicacionField);
+        panel.add(new JLabel("Fecha de Publicación:"));
+        panel.add(fechaPublicacionChooser);  // Añadimos el JDateChooser
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Añadir Libro", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
@@ -147,7 +150,11 @@ public class VistaLibros extends JFrame {
             String autor = autorField.getText().trim();
             String genero = generoField.getText().trim();
             boolean disponibilidad = disponibilidadBox.isSelected();
-            String fechaPublicacion = fechaPublicacionField.getText().trim();
+            Date fechaPublicacion = null;
+
+            if (fechaPublicacionChooser.getDate() != null) {
+                fechaPublicacion = new java.sql.Date(fechaPublicacionChooser.getDate().getTime());  // Obtener la fecha seleccionada
+            }
 
             if (titulo.isEmpty() || autor.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Título y Autor son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -161,7 +168,7 @@ public class VistaLibros extends JFrame {
                 ps.setString(2, autor);
                 ps.setString(3, genero.isEmpty() ? null : genero);
                 ps.setBoolean(4, disponibilidad);
-                ps.setDate(5, fechaPublicacion.isEmpty() ? null : Date.valueOf(fechaPublicacion));
+                ps.setDate(5, fechaPublicacion);
                 ps.executeUpdate();
 
                 loadBooks();

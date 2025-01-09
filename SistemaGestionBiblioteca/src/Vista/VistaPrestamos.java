@@ -101,15 +101,15 @@ public class VistaPrestamos extends JFrame {
 		}
 
 		JButton allLoansButton = new StyledButton("Mostrar Todos los Préstamos");
-		allLoansButton.addActionListener(e -> loadPrestamos("ALL"));
+		allLoansButton.addActionListener(e -> loadPrestamos("ALL", isAdmin, emailUser));
 		buttonPanel.add(allLoansButton);
 
 		JButton returnedLoansButton = new StyledButton("Mostrar Préstamos Devueltos");
-		returnedLoansButton.addActionListener(e -> loadPrestamos("RETURNED"));
+		returnedLoansButton.addActionListener(e -> loadPrestamos("RETURNED", isAdmin, emailUser));
 		buttonPanel.add(returnedLoansButton);
 
 		JButton notReturnedLoansButton = new StyledButton("Mostrar Préstamos No Devueltos");
-		notReturnedLoansButton.addActionListener(e -> loadPrestamos("NOT_RETURNED"));
+		notReturnedLoansButton.addActionListener(e -> loadPrestamos("NOT_RETURNED", isAdmin, emailUser));
 		buttonPanel.add(notReturnedLoansButton);
 
 		if (isAdmin) {
@@ -140,37 +140,50 @@ public class VistaPrestamos extends JFrame {
 		fondoPanel.add(buttonPanel, BorderLayout.EAST);
 
 		// Cargar préstamos al inicio
-		loadPrestamos("ALL");
+		loadPrestamos("ALL", isAdmin, emailUser);
 	}
 
-	private void loadPrestamos(String filter) {
-		try (Connection connection = new Db().getConnection()) {
-			String query = "SELECT l.Titulo, u.Email AS Usuario, p.Fecha_Prestamo, p.Fecha_Devolucion, p.Multa_Generada, p.ID "
-					+ "FROM prestamos p " + "JOIN libros l ON p.ID_Libro = l.ID "
-					+ "JOIN usuarios u ON p.ID_Usuario = u.ID";
+	private void loadPrestamos(String filter, boolean isAdmin, String emailUser) {
+	    try (Connection connection = new Db().getConnection()) {
+	        String query = "SELECT l.Titulo, u.Email AS Usuario, p.Fecha_Prestamo, p.Fecha_Devolucion, p.Multa_Generada, p.ID "
+	                + "FROM prestamos p "
+	                + "JOIN libros l ON p.ID_Libro = l.ID "
+	                + "JOIN usuarios u ON p.ID_Usuario = u.ID";
 
-			if ("NOT_RETURNED".equals(filter)) {
-				query += " WHERE p.Fecha_Devolucion IS NULL";
-			} else if ("RETURNED".equals(filter)) {
-				query += " WHERE p.Fecha_Devolucion IS NOT NULL";
-			}
+	        // Si no eres admin, filtramos por el email del usuario actual
+	        if (!isAdmin) {
+	            query += " WHERE u.Email = ?";
+	        }
 
-			try (PreparedStatement statement = connection.prepareStatement(query);
-					ResultSet resultSet = statement.executeQuery()) {
+	        // Aplicamos filtros adicionales según el tipo de préstamo
+	        if ("NOT_RETURNED".equals(filter)) {
+	            query += " AND p.Fecha_Devolucion IS NULL";
+	        } else if ("RETURNED".equals(filter)) {
+	            query += " AND p.Fecha_Devolucion IS NOT NULL";
+	        }
 
-				tableModel.setRowCount(0); // Limpiar la tabla
-				while (resultSet.next()) {
-					String estado = resultSet.getDate("Fecha_Devolucion") != null ? "Devuelto" : "No Devuelto";
-					tableModel.addRow(new Object[] { resultSet.getString("Titulo"), resultSet.getString("Usuario"),
-							resultSet.getDate("Fecha_Prestamo"), resultSet.getDate("Fecha_Devolucion"),
-							resultSet.getFloat("Multa_Generada"), estado, resultSet.getInt("ID") });
-				}
-			}
-		} catch (SQLException e) {
-			JOptionPane.showMessageDialog(this, "Error al cargar los préstamos: " + e.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
-		}
+	        try (PreparedStatement statement = connection.prepareStatement(query)) {
+	            // Si no eres admin, setear el parámetro de email
+	            if (!isAdmin) {
+	                statement.setString(1, emailUser);
+	            }
+
+	            try (ResultSet resultSet = statement.executeQuery()) {
+	                tableModel.setRowCount(0); // Limpiar la tabla
+	                while (resultSet.next()) {
+	                    String estado = resultSet.getDate("Fecha_Devolucion") != null ? "Devuelto" : "No Devuelto";
+	                    tableModel.addRow(new Object[] { resultSet.getString("Titulo"), resultSet.getString("Usuario"),
+	                            resultSet.getDate("Fecha_Prestamo"), resultSet.getDate("Fecha_Devolucion"),
+	                            resultSet.getFloat("Multa_Generada"), estado, resultSet.getInt("ID") });
+	                }
+	            }
+	        }
+	    } catch (SQLException e) {
+	        JOptionPane.showMessageDialog(this, "Error al cargar los préstamos: " + e.getMessage(), "Error",
+	                JOptionPane.ERROR_MESSAGE);
+	    }
 	}
+
 
 	private void addPrestamo(boolean isAdmin, String currentUser, String emailUser) {
 	    try (Connection connection = new Db().getConnection()) {
@@ -231,7 +244,7 @@ public class VistaPrestamos extends JFrame {
 	                ps.setInt(2, userId);
 	                ps.setDate(3, Date.valueOf(loanDate));
 	                ps.executeUpdate();
-	                loadPrestamos("ALL");
+	                loadPrestamos("ALL", isAdmin, emailUser);
 	                JOptionPane.showMessageDialog(this, "Préstamo añadido con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
 	            }
 	        }
@@ -263,7 +276,7 @@ public class VistaPrestamos extends JFrame {
 			}
 			statement.setInt(2, prestamoId);
 			statement.executeUpdate();
-			loadPrestamos("ALL");
+			loadPrestamos("ALL", isReturned, query);
 			JOptionPane.showMessageDialog(this, "Estado de devolución actualizado con éxito.", "Información",
 					JOptionPane.INFORMATION_MESSAGE);
 		} catch (SQLException e) {
