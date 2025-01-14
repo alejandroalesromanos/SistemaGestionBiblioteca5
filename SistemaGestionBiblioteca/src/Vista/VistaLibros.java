@@ -9,8 +9,6 @@ import javax.swing.table.DefaultTableModel;
 import com.toedter.calendar.JDateChooser;
 
 import modelo.Db;
-import java.awt.event.ActionListener;
-import java.time.Year;
 
 public class VistaLibros extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -130,7 +128,7 @@ public class VistaLibros extends JFrame {
         JTextField autorField = new JTextField();
         JTextField generoField = new JTextField();
         JCheckBox disponibilidadBox = new JCheckBox("Disponible");
-        JDateChooser fechaPublicacionChooser = new JDateChooser();  // Usamos JDateChooser
+        JDateChooser fechaPublicacionChooser = new JDateChooser();
 
         panel.add(new JLabel("Título:"));
         panel.add(tituloField);
@@ -141,7 +139,7 @@ public class VistaLibros extends JFrame {
         panel.add(new JLabel("Disponibilidad:"));
         panel.add(disponibilidadBox);
         panel.add(new JLabel("Fecha de Publicación:"));
-        panel.add(fechaPublicacionChooser);  // Añadimos el JDateChooser
+        panel.add(fechaPublicacionChooser);
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Añadir Libro", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
@@ -153,7 +151,7 @@ public class VistaLibros extends JFrame {
             Date fechaPublicacion = null;
 
             if (fechaPublicacionChooser.getDate() != null) {
-                fechaPublicacion = new java.sql.Date(fechaPublicacionChooser.getDate().getTime());  // Obtener la fecha seleccionada
+                fechaPublicacion = new java.sql.Date(fechaPublicacionChooser.getDate().getTime());
             }
 
             if (titulo.isEmpty() || autor.isEmpty()) {
@@ -175,8 +173,6 @@ public class VistaLibros extends JFrame {
                 JOptionPane.showMessageDialog(this, "Libro añadido con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Error al añadir libro: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (IllegalArgumentException e) {
-                JOptionPane.showMessageDialog(this, "Fecha de publicación no válida.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -227,14 +223,13 @@ public class VistaLibros extends JFrame {
                 ps.executeUpdate();
 
                 loadBooks();
-                JOptionPane.showMessageDialog(this, "Disponibilidad actualizada con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Disponibilidad cambiada con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Error al cambiar disponibilidad: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    // Botón personalizado
     private static class StyledButton extends JButton {
         public StyledButton(String text) {
             super(text);

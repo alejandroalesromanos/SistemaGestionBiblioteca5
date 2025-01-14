@@ -2,14 +2,13 @@ package Vista;
 
 import java.awt.*;
 import java.sql.*;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-
 import com.toedter.calendar.JDateChooser;
-
 import modelo.Db;
 
 public class VistaPrestamos extends JFrame {
@@ -26,7 +25,6 @@ public class VistaPrestamos extends JFrame {
 		setLocationRelativeTo(null);
 		setResizable(false);
 
-		// Fondo personalizado
 		JPanel fondoPanel = new JPanel() {
 			@Override
 			protected void paintComponent(Graphics g) {
@@ -45,18 +43,16 @@ public class VistaPrestamos extends JFrame {
 		fondoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		setContentPane(fondoPanel);
 
-		// Título de la ventana
 		JLabel titleLabel = new JLabel("Lista de Préstamos", SwingConstants.CENTER);
 		titleLabel.setFont(new Font("Arial Black", Font.BOLD, 24));
 		titleLabel.setForeground(Color.WHITE);
 		fondoPanel.add(titleLabel, BorderLayout.NORTH);
 
-		// Tabla de préstamos
 		tableModel = new DefaultTableModel(new Object[][] {},
-				new String[] { "Libro", "Usuario", "Fecha Préstamo", "Fecha Devolución", "Multa", "Estado", "ID" }) {
+				new String[] { "Libro", "Usuario", "Fecha Préstamo", "Fecha Devolución", "Multa", "Estado" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
-				return false; // Hacer que la tabla no sea editable
+				return false;
 			}
 		};
 		prestamosTable = new JTable(tableModel);
@@ -69,190 +65,217 @@ public class VistaPrestamos extends JFrame {
 		JScrollPane scrollPane = new JScrollPane(prestamosTable);
 		fondoPanel.add(scrollPane, BorderLayout.CENTER);
 
-		// Panel de botones
 		JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 10, 10));
 		buttonPanel.setOpaque(false);
 		buttonPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-		class StyledButton extends JButton {
-			public StyledButton(String text) {
-				super(text);
-				setFont(new Font("Arial", Font.BOLD, 14));
-				setForeground(Color.WHITE);
-				setBackground(new Color(52, 152, 219));
-				setBorderPainted(true);
-				setFocusPainted(false);
-				setContentAreaFilled(false);
-				setOpaque(true);
-				setPreferredSize(new Dimension(250, 40));
-				setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
-				addMouseListener(new java.awt.event.MouseAdapter() {
-					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						setBackground(new Color(41, 128, 185));
-						setBorder(BorderFactory.createLineBorder(new Color(52, 152, 219), 2));
-					}
-
-					public void mouseExited(java.awt.event.MouseEvent evt) {
-						setBackground(new Color(52, 152, 219));
-						setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
-					}
-				});
-			}
-		}
-
-		JButton allLoansButton = new StyledButton("Mostrar Todos los Préstamos");
-		allLoansButton.addActionListener(e -> loadPrestamos("ALL", isAdmin, emailUser));
+		JButton allLoansButton = createStyledButton("Mostrar Todos los Préstamos",
+				e -> loadPrestamos("ALL", isAdmin, emailUser));
 		buttonPanel.add(allLoansButton);
 
-		JButton returnedLoansButton = new StyledButton("Mostrar Préstamos Devueltos");
-		returnedLoansButton.addActionListener(e -> loadPrestamos("RETURNED", isAdmin, emailUser));
+		JButton returnedLoansButton = createStyledButton("Mostrar Préstamos Devueltos",
+				e -> loadPrestamos("RETURNED", isAdmin, emailUser));
 		buttonPanel.add(returnedLoansButton);
 
-		JButton notReturnedLoansButton = new StyledButton("Mostrar Préstamos No Devueltos");
-		notReturnedLoansButton.addActionListener(e -> loadPrestamos("NOT_RETURNED", isAdmin, emailUser));
+		JButton notReturnedLoansButton = createStyledButton("Mostrar Préstamos No Devueltos",
+				e -> loadPrestamos("NOT_RETURNED", isAdmin, emailUser));
 		buttonPanel.add(notReturnedLoansButton);
 
 		if (isAdmin) {
-			JButton addLoanButton = new StyledButton("Añadir Préstamo");
-			addLoanButton.addActionListener(e -> addPrestamo(isAdmin, currentUser, emailUser));
+			JButton addLoanButton = createStyledButton("Añadir Préstamo",
+					e -> addPrestamo(isAdmin, currentUser, emailUser));
 			buttonPanel.add(addLoanButton);
 
-			JButton markAsReturnedButton = new StyledButton("Marcar como Devuelto");
-			markAsReturnedButton.addActionListener(e -> updateReturnStatus(true));
+			JButton markAsReturnedButton = createStyledButton("Marcar como Devuelto", e -> updateReturnStatus(true));
 			buttonPanel.add(markAsReturnedButton);
 
-			JButton markAsNotReturnedButton = new StyledButton("Marcar como No Devuelto");
-			markAsNotReturnedButton.addActionListener(e -> updateReturnStatus(false));
+			JButton markAsNotReturnedButton = createStyledButton("Marcar como No Devuelto",
+					e -> updateReturnStatus(false));
 			buttonPanel.add(markAsNotReturnedButton);
 		} else {
-			JButton reserveButton = new StyledButton("Reservar Libro");
-			reserveButton.addActionListener(e -> addPrestamo(isAdmin, currentUser,  emailUser));
+			JButton reserveButton = createStyledButton("Reservar Libro",
+					e -> addPrestamo(isAdmin, currentUser, emailUser));
 			buttonPanel.add(reserveButton);
 		}
 
-		JButton backButton = new StyledButton("Volver al Menú Principal");
-		backButton.addActionListener(e -> {
+		JButton backButton = createStyledButton("Volver al Menú Principal", e -> {
 			dispose();
 			new MenuPrincipal(isAdmin, currentUser, emailUser).setVisible(true);
 		});
 		buttonPanel.add(backButton);
 
 		fondoPanel.add(buttonPanel, BorderLayout.EAST);
-
-		// Cargar préstamos al inicio
 		loadPrestamos("ALL", isAdmin, emailUser);
 	}
 
-	private void loadPrestamos(String filter, boolean isAdmin, String emailUser) {
-	    try (Connection connection = new Db().getConnection()) {
-	        String query = "SELECT l.Titulo, u.Email AS Usuario, p.Fecha_Prestamo, p.Fecha_Devolucion, p.Multa_Generada, p.ID "
-	                + "FROM prestamos p "
-	                + "JOIN libros l ON p.ID_Libro = l.ID "
-	                + "JOIN usuarios u ON p.ID_Usuario = u.ID";
+	private JButton createStyledButton(String text, java.awt.event.ActionListener action) {
+		JButton button = new JButton(text);
+		button.setFont(new Font("Arial", Font.BOLD, 14));
+		button.setForeground(Color.WHITE);
+		button.setBackground(new Color(52, 152, 219));
+		button.setBorderPainted(true);
+		button.setFocusPainted(false);
+		button.setContentAreaFilled(false);
+		button.setOpaque(true);
+		button.setPreferredSize(new Dimension(250, 40));
+		button.setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
+		button.addActionListener(action);
+		button.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				button.setBackground(new Color(41, 128, 185));
+				button.setBorder(BorderFactory.createLineBorder(new Color(52, 152, 219), 2));
+			}
 
-	        // Si no eres admin, filtramos por el email del usuario actual
-	        if (!isAdmin) {
-	            query += " WHERE u.Email = ?";
-	        }
-
-	        // Aplicamos filtros adicionales según el tipo de préstamo
-	        if ("NOT_RETURNED".equals(filter)) {
-	            query += " AND p.Fecha_Devolucion IS NULL";
-	        } else if ("RETURNED".equals(filter)) {
-	            query += " AND p.Fecha_Devolucion IS NOT NULL";
-	        }
-
-	        try (PreparedStatement statement = connection.prepareStatement(query)) {
-	            // Si no eres admin, setear el parámetro de email
-	            if (!isAdmin) {
-	                statement.setString(1, emailUser);
-	            }
-
-	            try (ResultSet resultSet = statement.executeQuery()) {
-	                tableModel.setRowCount(0); // Limpiar la tabla
-	                while (resultSet.next()) {
-	                    String estado = resultSet.getDate("Fecha_Devolucion") != null ? "Devuelto" : "No Devuelto";
-	                    tableModel.addRow(new Object[] { resultSet.getString("Titulo"), resultSet.getString("Usuario"),
-	                            resultSet.getDate("Fecha_Prestamo"), resultSet.getDate("Fecha_Devolucion"),
-	                            resultSet.getFloat("Multa_Generada"), estado, resultSet.getInt("ID") });
-	                }
-	            }
-	        }
-	    } catch (SQLException e) {
-	        JOptionPane.showMessageDialog(this, "Error al cargar los préstamos: " + e.getMessage(), "Error",
-	                JOptionPane.ERROR_MESSAGE);
-	    }
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				button.setBackground(new Color(52, 152, 219));
+				button.setBorder(BorderFactory.createLineBorder(new Color(41, 128, 185), 2));
+			}
+		});
+		return button;
 	}
 
+	private void loadPrestamos(String filter, boolean isAdmin, String emailUser) {
+		try (Connection connection = new Db().getConnection()) {
+			String query = "SELECT l.Titulo, u.Email AS Usuario, p.Fecha_Prestamo, p.Fecha_Devolucion, p.Multa_Generada, p.ID "
+					+ "FROM prestamos p " + "JOIN libros l ON p.ID_Libro = l.ID "
+					+ "JOIN usuarios u ON p.ID_Usuario = u.ID";
+
+			if (!isAdmin) {
+				query += " WHERE u.Email = ?";
+			}
+
+			if ("NOT_RETURNED".equals(filter)) {
+				query += isAdmin ? " WHERE p.Fecha_Devolucion IS NULL" : " AND p.Fecha_Devolucion IS NULL";
+			} else if ("RETURNED".equals(filter)) {
+				query += isAdmin ? " WHERE p.Fecha_Devolucion IS NOT NULL" : " AND p.Fecha_Devolucion IS NOT NULL";
+			}
+
+			try (PreparedStatement statement = connection.prepareStatement(query)) {
+				if (!isAdmin) {
+					statement.setString(1, emailUser);
+				}
+
+				try (ResultSet resultSet = statement.executeQuery()) {
+					tableModel.setRowCount(0);
+					while (resultSet.next()) {
+						String estado = resultSet.getDate("Fecha_Devolucion") != null ? "Devuelto" : "No Devuelto";
+						Date fechaPrestamo = resultSet.getDate("Fecha_Prestamo");
+						Date fechaDevolucion = resultSet.getDate("Fecha_Devolucion");
+						long multa = 0;
+
+						if (fechaDevolucion == null) {
+							// Calcular días transcurridos desde la fecha de préstamo
+							long diasTranscurridos = (System.currentTimeMillis() - fechaPrestamo.getTime())
+									/ (1000 * 60 * 60 * 24);
+							if (diasTranscurridos > 15) {
+								multa = (diasTranscurridos - 15) * 2; // Ejemplo: 2 unidades monetarias por día
+							}
+						}
+
+						tableModel.addRow(new Object[] { resultSet.getString("Titulo"), resultSet.getString("Usuario"),
+								fechaPrestamo, fechaDevolucion,
+								multa > 0 ? multa : resultSet.getFloat("Multa_Generada"), estado,
+								resultSet.getInt("ID") });
+					}
+				}
+			}
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(this, "Error al cargar los préstamos: " + e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+		}
+	}
 
 	private void addPrestamo(boolean isAdmin, String currentUser, String emailUser) {
+	    JDialog dialog = new JDialog(this, "Reservar Libro", true);
+	    dialog.setLayout(new GridBagLayout());
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    dialog.setSize(400, 250); // Tamaño del cuadro de diálogo
+	    dialog.setLocationRelativeTo(this);
+
+	    JLabel libroLabel = new JLabel("Selecciona un libro:");
+	    JComboBox<String> libroComboBox = new JComboBox<>();
+	    libroComboBox.setPreferredSize(new Dimension(200, 25)); // Ajuste del tamaño
+	    Map<String, Integer> libroMap = new HashMap<>();
+
 	    try (Connection connection = new Db().getConnection()) {
-	        // Consultar los libros disponibles
-	        String bookQuery = "SELECT ID, Titulo FROM libros WHERE Disponibilidad = 1";
-	        PreparedStatement bookStatement = connection.prepareStatement(bookQuery);
-	        ResultSet bookResultSet = bookStatement.executeQuery();
+	        String query = "SELECT ID, Titulo FROM libros WHERE Disponibilidad = 1";
+	        try (PreparedStatement statement = connection.prepareStatement(query);
+	             ResultSet resultSet = statement.executeQuery()) {
 
-	        Map<String, Integer> booksMap = new LinkedHashMap<>();
-	        while (bookResultSet.next()) {
-	            booksMap.put(bookResultSet.getString("Titulo"), bookResultSet.getInt("ID"));
-	        }
-
-	        // Crear los componentes para el formulario
-	        JComboBox<String> bookDropdown = new JComboBox<>(booksMap.keySet().toArray(new String[0]));
-	        JDateChooser loanDateChooser = new JDateChooser();
-	        loanDateChooser.setDateFormatString("yyyy-MM-dd");
-
-	        // Crear el formulario sin el campo de correo
-	        Object[] form = new Object[]{
-	            "Seleccione el Libro:", bookDropdown,
-	            "Fecha de Préstamo:", loanDateChooser
-	        };
-
-	        int option = JOptionPane.showConfirmDialog(this, form, "Añadir Nuevo Préstamo", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-	        
-	        if (option == JOptionPane.OK_OPTION) {
-	            // Validar campos
-	            String selectedBook = (String) bookDropdown.getSelectedItem();
-	            String loanDate = loanDateChooser.getDate() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(loanDateChooser.getDate()) : "";
-
-	            if (selectedBook == null || loanDate.isEmpty()) {
-	                JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-	                return;
-	            }
-
-	            int bookId = booksMap.get(selectedBook);
-	            String userEmail = emailUser;  // El correo del usuario se asigna automáticamente
-
-	            // Verificar si el usuario exist
-	            System.out.println("Email: " + userEmail);
-	            int userId = -1;
-	            String userQuery = "SELECT ID FROM usuarios WHERE Email = ?";
-	            try (PreparedStatement userStatement = connection.prepareStatement(userQuery)) {
-	                userStatement.setString(1, userEmail);
-	                ResultSet userResultSet = userStatement.executeQuery();
-	                if (userResultSet.next()) {
-	                    userId = userResultSet.getInt("ID");
-	                } else {
-	                    JOptionPane.showMessageDialog(this, "Usuario no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
-	                    return;
-	                }
-	            }
-
-	            // Insertar el préstamo en la base de datos
-	            try (PreparedStatement ps = connection.prepareStatement("INSERT INTO prestamos (ID_Libro, ID_Usuario, Fecha_Prestamo) VALUES (?, ?, ?)")) {
-	                ps.setInt(1, bookId);
-	                ps.setInt(2, userId);
-	                ps.setDate(3, Date.valueOf(loanDate));
-	                ps.executeUpdate();
-	                loadPrestamos("ALL", isAdmin, emailUser);
-	                JOptionPane.showMessageDialog(this, "Préstamo añadido con éxito.", "Información", JOptionPane.INFORMATION_MESSAGE);
+	            while (resultSet.next()) {
+	                String titulo = resultSet.getString("Titulo");
+	                int id = resultSet.getInt("ID");
+	                libroComboBox.addItem(titulo);
+	                libroMap.put(titulo, id);
 	            }
 	        }
-	    } catch (SQLException e) {
-	        JOptionPane.showMessageDialog(this, "Error al procesar la solicitud: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+	    } catch (SQLException ex) {
+	        JOptionPane.showMessageDialog(dialog, "Error al cargar los libros disponibles: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+	        return;
 	    }
-	}
 
+	    JLabel fechaLabel = new JLabel("Fecha Préstamo:");
+	    JDateChooser fechaChooser = new JDateChooser();
+	    fechaChooser.setDateFormatString("yyyy-MM-dd");
+	    fechaChooser.setPreferredSize(new Dimension(200, 25));
+
+	    JButton addButton = new JButton("Reservar");
+	    addButton.setPreferredSize(new Dimension(100, 30));
+	    addButton.addActionListener(e -> {
+	        String selectedLibro = (String) libroComboBox.getSelectedItem();
+	        if (selectedLibro == null) {
+	            JOptionPane.showMessageDialog(dialog, "Debe seleccionar un libro.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+	            return;
+	        }
+
+	        int libroId = libroMap.get(selectedLibro);
+	        try (Connection connection = new Db().getConnection()) {
+	            String query = "INSERT INTO prestamos (ID_Libro, ID_Usuario, Fecha_Prestamo) VALUES (?, ?, ?)";
+	            try (PreparedStatement statement = connection.prepareStatement(query)) {
+	                statement.setInt(1, libroId);
+	                statement.setInt(2, getUserIdByEmail(emailUser, connection)); // Corrección aquí
+	                statement.setDate(3, new java.sql.Date(fechaChooser.getDate().getTime()));
+
+	                statement.executeUpdate();
+
+	                // Actualizar la disponibilidad del libro
+	                String updateQuery = "UPDATE libros SET Disponibilidad = 0 WHERE ID = ?";
+	                try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+	                    updateStatement.setInt(1, libroId);
+	                    updateStatement.executeUpdate();
+	                }
+
+	                JOptionPane.showMessageDialog(dialog, "Préstamo añadido con éxito.");
+	                dialog.dispose();
+	                loadPrestamos("ALL", isAdmin, emailUser);
+	            }
+	        } catch (SQLException ex) {
+	            JOptionPane.showMessageDialog(dialog, "Error al añadir el préstamo: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    });
+
+	    gbc.gridx = 0;
+	    gbc.gridy = 0;
+	    gbc.insets = new Insets(5, 5, 5, 5);
+	    dialog.add(libroLabel, gbc);
+
+	    gbc.gridx = 1;
+	    dialog.add(libroComboBox, gbc);
+
+	    gbc.gridx = 0;
+	    gbc.gridy = 1;
+	    dialog.add(fechaLabel, gbc);
+
+	    gbc.gridx = 1;
+	    dialog.add(fechaChooser, gbc);
+
+	    gbc.gridx = 0;
+	    gbc.gridy = 2;
+	    gbc.gridwidth = 2;
+	    dialog.add(addButton, gbc);
+
+	    dialog.setVisible(true);
+	}
 
 
 
@@ -265,23 +288,36 @@ public class VistaPrestamos extends JFrame {
 		}
 
 		int prestamoId = (int) tableModel.getValueAt(selectedRow, 6);
-
 		try (Connection connection = new Db().getConnection()) {
 			String query = "UPDATE prestamos SET Fecha_Devolucion = ? WHERE ID = ?";
-			PreparedStatement statement = connection.prepareStatement(query);
-			if (isReturned) {
-				statement.setDate(1, new java.sql.Date(System.currentTimeMillis()));
-			} else {
-				statement.setNull(1, Types.DATE);
+			try (PreparedStatement statement = connection.prepareStatement(query)) {
+				if (isReturned) {
+					statement.setDate(1, new java.sql.Date(System.currentTimeMillis()));
+				} else {
+					statement.setNull(1, Types.DATE);
+				}
+				statement.setInt(2, prestamoId);
+
+				statement.executeUpdate();
+				JOptionPane.showMessageDialog(this, "Estado de devolución actualizado con éxito.");
+				loadPrestamos("ALL", true, null);
 			}
-			statement.setInt(2, prestamoId);
-			statement.executeUpdate();
-			loadPrestamos("ALL", isReturned, query);
-			JOptionPane.showMessageDialog(this, "Estado de devolución actualizado con éxito.", "Información",
-					JOptionPane.INFORMATION_MESSAGE);
 		} catch (SQLException e) {
-			JOptionPane.showMessageDialog(this, "Error al actualizar estado de devolución: " + e.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Error al actualizar el estado de devolución: " + e.getMessage(),
+					"Error", JOptionPane.ERROR_MESSAGE);
 		}
+	}
+
+	private int getUserIdByEmail(String email, Connection connection) throws SQLException {
+		String query = "SELECT ID FROM usuarios WHERE Email = ?";
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
+			statement.setString(1, email);
+			try (ResultSet resultSet = statement.executeQuery()) {
+				if (resultSet.next()) {
+					return resultSet.getInt("ID");
+				}
+			}
+		}
+		throw new SQLException("Usuario no encontrado.");
 	}
 }
